@@ -1,0 +1,19 @@
+{
+  "name": "migrationGlobe",
+  "version": "0.0.1",
+  "homepage": "https://github.com/xseignard/migrationGlobe",
+  "authors": [
+    "xseignard <xavier.seignard@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "threejs": "*"
+  }
+}
