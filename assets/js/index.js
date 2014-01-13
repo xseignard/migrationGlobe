@@ -13,15 +13,10 @@
     });
     var paris = {latitude:48.85, longitude:2.35};
     var xhr = new XMLHttpRequest();
-    // Where do we get the data?
     xhr.open('GET', 'assets/data/capitals.json', true);
-    // What do we do when we have it?
     xhr.onreadystatechange = function() {
-      // If we've received the data
       if (xhr.readyState === 4 && xhr.status === 200) {
-        // Parse the JSON
         var data = JSON.parse(xhr.responseText);
-        // Tell the globe about your JSON data
         var current;
         for (var i = 0; i < data.length/5; i++) {
           current = data[i];
@@ -31,7 +26,6 @@
         }
       }
     };
-    // Begin request
     xhr.send(null);
     earth.animate();
 })(Globe, Stats);
