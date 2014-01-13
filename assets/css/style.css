@@ -19,7 +19,12 @@ body {
   background-color: rgba(102,102,102,0.8);
   right: 10px;
   padding: 10px;
+}
 
+#stats {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
 }
 
 a {

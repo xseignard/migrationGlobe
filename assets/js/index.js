@@ -1,10 +1,6 @@
 (function(Globe, Stats) {
 	'use strict';
 	var stats = new Stats();
-    stats.setMode(0);
-    stats.domElement.style.position = 'absolute';
-    stats.domElement.style.right = '0px';
-    stats.domElement.style.top = '0px';
     document.body.appendChild(stats.domElement);
     setInterval(function() {
         stats.begin();
@@ -27,7 +23,7 @@
         var data = JSON.parse(xhr.responseText);
         // Tell the globe about your JSON data
         var current;
-        for (var i = 0; i < 50; i++) {
+        for (var i = 0; i < data.length/5; i++) {
           current = data[i];
           if (current.country !== 'France') {
             earth.addFlux(paris.latitude, paris.longitude, current.latitude, current.longitude);

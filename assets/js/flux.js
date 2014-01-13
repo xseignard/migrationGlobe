@@ -9,8 +9,11 @@
 		rotation = {x:0, y:0},
 		target = {x:Math.PI*3/2, y:Math.PI/6.0},
 		targetOnDown = {x:0, y:0},
-		distance = 100000,
-		distanceTarget = 100000,
+		farCamera = 2000,
+		farFog = 2000,
+		farTarget = 2000,
+		nearCamera = 1,
+		nearFog = 1800,
 		PI_HALF = Math.PI/2,
 		overRenderer;
 
@@ -21,9 +24,10 @@
 		height = window.innerHeight;
 
 		scene = new THREE.Scene();
-
-		camera = new THREE.PerspectiveCamera(30, width/height, 1, 10000);
-		camera.position.z = distance;
+		scene.fog = new THREE.Fog(0x111111, nearFog, farFog);
+		
+		camera = new THREE.PerspectiveCamera(30, width/height, nearCamera, farCamera);
+		camera.position.z = farCamera;
 
 		renderer = new THREE.WebGLRenderer({antialias: true});
 		renderer.setSize(width, height);
@@ -70,42 +74,16 @@
 		var distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY + deltaZ*deltaZ);
 
 		var midCoord = this.midCoord(srcLat, srcLng, destLat, destLng);
-		var midPoint = this.coordToPoint(midCoord.latitude, midCoord.longitude, distance*2);
+		var midPoint = this.coordToPoint(midCoord.latitude, midCoord.longitude, distance*1.5);
 		
-		var material = new THREE.LineBasicMaterial({color: 'green', linewidth: 5});
+		var material = new THREE.LineBasicMaterial({color: 0xff0000, linewidth: 1});
+		//var material = new THREE.LineDashedMaterial({ color: 0xffffff, dashSize: 350, gapSize: 300 });
 		var curve = new THREE.QuadraticBezierCurve3(srcPoint, midPoint, destPoint);
 		var path = new THREE.CurvePath();
-        path.add(curve);
+		path.add(curve);
 		var geometry = path.createPointsGeometry(100);
-        var flux = new THREE.Line(geometry, material);
+		var flux = new THREE.Line(geometry, material);
 		scene.add(flux);
-
-		/*
-		var cubic1 = new THREE.Vector3();
-		cubic1.x = midPoint.x - 0.3*srcPoint.x;
-		cubic1.y = midPoint.y - 0.3*srcPoint.y;
-		cubic1.z = midPoint.z - 0.3*srcPoint.z;
-		var cubic2 = new THREE.Vector3();
-		cubic2.x = destPoint.x - 0.3*midPoint.x;
-		cubic2.y = destPoint.y - 0.3*midPoint.y;
-		cubic2.z = destPoint.z - 0.3*midPoint.z;
-		material = new THREE.LineBasicMaterial({color: 'red', linewidth: 6});
-		curve = new THREE.CubicBezierCurve3(srcPoint, cubic1, cubic2, destPoint);
-		path = new THREE.CurvePath();
-        path.add(curve);
-		geometry = path.createPointsGeometry(100);
-        flux = new THREE.Line(geometry, material);
-		scene.add(flux);
-		*/
-    };
-
-	Globe.prototype.createCube = function(lat, lng, elevation) {
-		var geometry = new THREE.CubeGeometry(1,1,1);
-		var material = new THREE.MeshBasicMaterial({color: 'red'});
-		var cube = new THREE.Mesh(geometry, material);
-		cube.position = this.coordToPoint(lat, lng, elevation);
-		scene.add(cube);
-		return cube;
 	};
 
 	Globe.prototype.coordToPoint = function(lat, lng, elevation) {
@@ -157,7 +135,7 @@
 		mouse.x = - event.clientX;
 		mouse.y = event.clientY;
 
-		var zoomDamp = distance/1000;
+		var zoomDamp = farCamera/1000;
 
 		target.x = targetOnDown.x + (mouse.x - mouseOnDown.x) * 0.005 * zoomDamp;
 		target.y = targetOnDown.y + (mouse.y - mouseOnDown.y) * 0.005 * zoomDamp;
@@ -202,9 +180,9 @@
 	};
 
 	var zoom = function(delta) {
-		distanceTarget -= delta;
-		distanceTarget = Math.min(distanceTarget, 2000);
-		distanceTarget = Math.max(distanceTarget, 500);
+		farTarget -= delta;
+		farTarget = Math.min(farTarget, 2000);
+		farTarget = Math.max(farTarget, 500);
 	};
 
 	var render = function() {
@@ -212,11 +190,11 @@
 
 		rotation.x += (target.x - rotation.x) * 0.1;
 		rotation.y += (target.y - rotation.y) * 0.1;
-		distance += (distanceTarget - distance) * 0.3;
+		farCamera += (farTarget - farCamera) * 0.3;
 
-		camera.position.x = distance * Math.sin(rotation.x) * Math.cos(rotation.y);
-		camera.position.y = distance * Math.sin(rotation.y);
-		camera.position.z = distance * Math.cos(rotation.x) * Math.cos(rotation.y);
+		camera.position.x = farCamera * Math.sin(rotation.x) * Math.cos(rotation.y);
+		camera.position.y = farCamera * Math.sin(rotation.y);
+		camera.position.z = farCamera * Math.cos(rotation.x) * Math.cos(rotation.y);
 
 		camera.lookAt(planet.position);
 
