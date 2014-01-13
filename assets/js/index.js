@@ -11,7 +11,7 @@
     var earth = new Globe(container, {
       texture: 'assets/img/world_4k.jpg'
     });
-    var paris = {latitude:48.85, longitude:2.35};
+    var home = {latitude:47.21176, longitude:-1.57300};
     var xhr = new XMLHttpRequest();
     xhr.open('GET', 'assets/data/capitals.json', true);
     xhr.onreadystatechange = function() {
@@ -21,7 +21,7 @@
         for (var i = 0; i < data.length/5; i++) {
           current = data[i];
           if (current.country !== 'France') {
-            earth.addFlux(paris.latitude, paris.longitude, current.latitude, current.longitude);
+            earth.addFlux(home.latitude, home.longitude, current.latitude, current.longitude);
           }
         }
       }
