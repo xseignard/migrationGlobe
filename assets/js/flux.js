@@ -60,16 +60,16 @@
 		render();
 	};
 
-	Globe.prototype.addFlux = function(src, dest) {
-		var srcPoint = this.coordToPoint(src.latitude, src.longitude);
-		var destPoint = this.coordToPoint(dest.latitude, dest.longitude);
+	Globe.prototype.addFlux = function(srcLat, srcLng, destLat, destLng) {
+		var srcPoint = this.coordToPoint(srcLat, srcLng);
+		var destPoint = this.coordToPoint(destLat, destLng);
 
 		var deltaX = destPoint.x - srcPoint.x;
 		var deltaY = destPoint.y - srcPoint.y;
 		var deltaZ = destPoint.z - srcPoint.z;
 		var distance = Math.sqrt(deltaX*deltaX + deltaY*deltaY + deltaZ*deltaZ);
 
-		var midCoord = this.midCoord(src, dest);
+		var midCoord = this.midCoord(srcLat, srcLng, destLat, destLng);
 		var midPoint = this.coordToPoint(midCoord.latitude, midCoord.longitude, distance*2);
 		
 		var material = new THREE.LineBasicMaterial({color: 'green', linewidth: 5});
@@ -120,13 +120,13 @@
 		return point;
 	};
 
-	Globe.prototype.midCoord = function(src, dest) {
-		var phi1 = src.latitude * Math.PI / 180, 
-			theta1 = src.longitude * Math.PI / 180,
-			phi2 = dest.latitude * Math.PI / 180,
-			deltaLong = (dest.longitude - src.longitude) * Math.PI / 180;
-		var bearingX = Math.cos(phi2) * Math.cos(deltaLong);
-		var bearingY = Math.cos(phi2) * Math.sin(deltaLong);
+	Globe.prototype.midCoord = function(srcLat, srcLng, destLat, destLng) {
+		var phi1 = srcLat * Math.PI / 180, 
+			theta1 = srcLng * Math.PI / 180,
+			phi2 = destLat * Math.PI / 180,
+			deltaLng = (destLng - srcLng) * Math.PI / 180;
+		var bearingX = Math.cos(phi2) * Math.cos(deltaLng);
+		var bearingY = Math.cos(phi2) * Math.sin(deltaLng);
 		var phi3 = Math.atan2(
 				Math.sin(phi1) + Math.sin(phi2),
 				Math.sqrt((Math.cos(phi1) + bearingX) * (Math.cos(phi1) + bearingX) + bearingY*bearingY)

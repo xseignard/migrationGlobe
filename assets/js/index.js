@@ -30,7 +30,7 @@
         for (var i = 0; i < 50; i++) {
           current = data[i];
           if (current.country !== 'France') {
-            earth.addFlux(paris, current);
+            earth.addFlux(paris.latitude, paris.longitude, current.latitude, current.longitude);
           }
         }
       }
