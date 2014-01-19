@@ -1,0 +1,25 @@
+{
+  "name": "migrationGlobe",
+  "version": "0.0.1",
+  "description": "Experiment around WebGL/Three.js and 3D dataviz",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/xseignard/migrationGlobe.git"
+  },
+  "author": "Xavier Seignard <xavier.seignard@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xseignard/migrationGlobe/issues"
+  },
+  "homepage": "https://github.com/xseignard/migrationGlobe",
+  "devDependencies": {
+    "gulp": "~3.4.1",
+    "gulp-usemin": "~0.1.1",
+    "rimraf": "~2.2.6",
+    "gulp-imagemin": "~0.1.4",
+    "gulp-livereload": "~0.2.0",
+    "tiny-lr": "0.0.5",
+    "gulp-util": "~2.2.12",
+    "express": "~3.4.8"
+  }
+}

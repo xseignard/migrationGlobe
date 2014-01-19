@@ -4,7 +4,9 @@
     <title>Globe/Flux</title>
     <meta charset="utf-8">
     <meta name="viewport" content="user-scalable=no, minimum-scale=1.0, maximum-scale=1.0, initial-scale=1">
+    <!-- build:css assets/css/style.min.css -->
     <link rel="stylesheet" href="assets/css/style.css">
+    <!-- endbuild -->
   </head>
   <body>
     <div id="container"></div>
@@ -12,13 +14,17 @@
       Created by <a href="https://twitter.com/xavier_seignard" target="_blank">@xavier_seignard</a> inspired by <a href="http://workshop.chromeexperiments.com/projects/armsglobe/" target="_blank">Arms Globe experiment</a> 
     </div>
     <div id="title">Globe/Flux</div>
-    <script type="text/javascript" src="bower_components/threejs/build/three.min.js"></script>
-    <script type="text/javascript" src="bower_components/Detector/index.js"></script>
-    <script type="text/javascript" src="bower_components/OrbitControls/index.js"></script>
-    <script type="text/javascript" src="bower_components/stats.js/build/stats.min.js"></script>
-    <script type="text/javascript" src="bower_components/dat-gui/build/dat.gui.min.js"></script>
+    <!-- build:js assets/js/vendors.min.js -->
+    <script type="text/javascript" src="../bower_components/threejs/build/three.min.js"></script>
+    <script type="text/javascript" src="../bower_components/Detector/index.js"></script>
+    <script type="text/javascript" src="../bower_components/OrbitControls/index.js"></script>
+    <script type="text/javascript" src="../bower_components/stats.js/build/stats.min.js"></script>
+    <script type="text/javascript" src="../bower_components/dat-gui/build/dat.gui.min.js"></script>
+    <!-- endbuild -->
+    <!-- build:js assets/js/main.min.js -->
     <script type="text/javascript" src="assets/js/globe.js"></script>
     <script type="text/javascript" src="assets/js/flux.js"></script>
     <script type="text/javascript" src="assets/js/index.js"></script>
+    <!-- endbuild -->
   </body>
 </html>
