@@ -5,6 +5,7 @@ var gulp = require('gulp'),
 	refresh = require('gulp-livereload'),
 	gutil = require('gulp-util'),
 	jshint = require('gulp-jshint'),
+	traceur = require('gulp-traceur'),
 	express = require('express'),
 	lr = require('tiny-lr'),
 	open = require('open'),
@@ -13,6 +14,7 @@ var gulp = require('gulp'),
 var src = {
 	folder:'./src',
 	js:'src/assets/js/**',
+	shaders:'src/assets/shaders/shaders.js',
 	css:'src/assets/css/**',
 	img:'src/assets/img/**',
 	data:'src/assets/data/**',
@@ -27,11 +29,14 @@ var dest = {
 	data:'dist/assets/data'
 };
 
+var tmp = './tmp';
+
 // start a dev server
 gulp.task('server', function() {
 	var app = express();
 	app.use(express.static(src.folder));
 	app.use('/bower_components', express.static(__dirname + '/bower_components'));
+	app.use('/tmp', express.static(__dirname + '/tmp'));
 	app.use(express.bodyParser());
     app.listen(8080, function() {
 		gutil.log('Listening on 8080');
@@ -46,6 +51,14 @@ gulp.task('open', function() {
 gulp.task('data', function() {
 	gulp.src(src.data)
 		.pipe(gulp.dest(dest.data))
+		.pipe(refresh(server));
+});
+
+// es6 to es5
+gulp.task('traceur', function() {
+	gulp.src(src.shaders)
+		.pipe(traceur())
+		.pipe(gulp.dest(tmp))
 		.pipe(refresh(server));
 });
 
@@ -82,7 +95,9 @@ gulp.task('lint', function() {
 // default task
 gulp.task('default', function() {
 	rimraf(dest.folder, function() {
-		gulp.run('server', 'livereload', 'open', 'data', 'img', 'usemin');
+		//rimraf(tmp, function() {
+			gulp.run('server', 'livereload', 'traceur', 'open', 'data', 'img', 'usemin');
+		//});
 	});
 
 	gulp.watch(src.data, function() {
@@ -93,5 +108,8 @@ gulp.task('default', function() {
 	});
 	gulp.watch(src.img, function() {
 		gulp.run('img');
+	});
+	gulp.watch(src.shaders, function() {
+		gulp.run('traceur');
 	});
 });

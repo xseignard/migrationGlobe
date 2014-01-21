@@ -59,8 +59,8 @@
 		var shaderMaterial = new THREE.ShaderMaterial({
 			uniforms: uniforms,
 			attributes: attributes,
-			vertexShader: document.getElementById('vertexshader').textContent,
-			fragmentShader: document.getElementById('fragmentshader').textContent,
+			vertexShader: Shaders.vertex1,
+			fragmentShader: Shaders.fragment1,
 			blending: THREE.AdditiveBlending,
 			depthTest: true,
 			transparent: true,

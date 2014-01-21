@@ -14,19 +14,6 @@
       Created by <a href="https://twitter.com/xavier_seignard" target="_blank">@xavier_seignard</a> inspired by <a href="http://workshop.chromeexperiments.com/projects/armsglobe/" target="_blank">Arms Globe experiment</a> 
     </div>
     <div id="title">Globe/Flux</div>
-    <script type="x-shader/x-vertex" id="vertexshader">
-        void main() {
-            gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-        }
-    </script>
-    <script type="x-shader/x-fragment" id="fragmentshader">
-        uniform vec3 color;
-        uniform float opacity;
-        void main() {
-            gl_FragColor = vec4(color, opacity);
-        }
-    </script>
-
     <!-- build:js assets/js/vendors.min.js -->
     <script type="text/javascript" src="../bower_components/threejs/build/three.min.js"></script>
     <script type="text/javascript" src="../bower_components/Detector/index.js"></script>
@@ -35,6 +22,7 @@
     <script type="text/javascript" src="../bower_components/dat-gui/build/dat.gui.min.js"></script>
     <!-- endbuild -->
     <!-- build:js assets/js/main.min.js -->
+    <script type="text/javascript" src="../tmp/shaders.js"></script>
     <script type="text/javascript" src="assets/js/globe.js"></script>
     <script type="text/javascript" src="assets/js/flux.js"></script>
     <script type="text/javascript" src="assets/js/index.js"></script>
