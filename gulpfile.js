@@ -4,8 +4,10 @@ var gulp = require('gulp'),
 	imagemin = require('gulp-imagemin'),
 	refresh = require('gulp-livereload'),
 	gutil = require('gulp-util'),
+	jshint = require('gulp-jshint'),
 	express = require('express'),
 	lr = require('tiny-lr'),
+	open = require('open'),
 	server = lr();
 
 var src = {
@@ -28,11 +30,16 @@ var dest = {
 // start a dev server
 gulp.task('server', function() {
 	var app = express();
-	app.use(express.static(dest.folder));
+	app.use(express.static(src.folder));
+	app.use('/bower_components', express.static(__dirname + '/bower_components'));
 	app.use(express.bodyParser());
     app.listen(8080, function() {
 		gutil.log('Listening on 8080');
 	});
+});
+
+gulp.task('open', function() {
+	open('http://localhost:8080/');
 });
 
 // copy json data
@@ -65,10 +72,17 @@ gulp.task('livereload', function(){
 	});
 });
 
+// jshint
+gulp.task('lint', function() {
+	gulp.src(src.js)
+		.pipe(jshint())
+		.pipe(jshint.reporter('default'));
+});
+
 // default task
 gulp.task('default', function() {
 	rimraf(dest.folder, function() {
-		gulp.run('server', 'livereload', 'data', 'img', 'usemin');
+		gulp.run('server', 'livereload', 'open', 'data', 'img', 'usemin');
 	});
 
 	gulp.watch(src.data, function() {

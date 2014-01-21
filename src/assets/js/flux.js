@@ -6,30 +6,29 @@
 
 	Flux.prototype.quadraticFlux = function(srcLat, srcLng, destLat, destLng) {
 		// convert {latitude,longitude} coordinates to {x,y,z} ones
-		var srcPoint = this.coordToPoint(srcLat, srcLng, this.mesh.geometry.radius);
-		var destPoint = this.coordToPoint(destLat, destLng, this.mesh.geometry.radius);
+		var srcPoint = this.coordToPoint(srcLat, srcLng);
+		var destPoint = this.coordToPoint(destLat, destLng);
 		// distance between the src and dest
 		var distance = srcPoint.clone().sub(destPoint).length();
-		// get the {latitude,longitude} of the middle point then convert it to {x,y,z}
-		var midCoord = this.midCoord(srcLat, srcLng, destLat, destLng);
-		var midPoint = this.coordToPoint(midCoord.latitude, midCoord.longitude, this.mesh.geometry.radius);
-		midPoint.normalize();
+		// get the {x,y,z} position of the middle point of the arc between src and dest and on the sphere 
+		var controlPoint = srcPoint.clone().add(destPoint).multiplyScalar(0.5);
+		controlPoint.sub(this.mesh.position);
+		controlPoint.normalize();
 		// set its position up in the air at radius + something
-		midPoint.multiplyScalar(this.mesh.geometry.radius + distance * 0.5); 
-		// create the quadratic flux
-		var material = new THREE.LineBasicMaterial({color: 'white', linewidth: 1});
-		var curve = new THREE.QuadraticBezierCurve3(srcPoint, midPoint, destPoint);
+		controlPoint.multiplyScalar(this.mesh.geometry.radius + distance*0.7);
+		controlPoint.add(this.mesh.position);
+		// create the quadratic flux geometry
+		var curve = new THREE.QuadraticBezierCurve3(srcPoint, controlPoint, destPoint);
 		var path = new THREE.CurvePath();
 		path.add(curve);
-		var geometry = path.createPointsGeometry(100);
-		var flux = new THREE.Line(geometry, material);
+		var flux = path.createPointsGeometry(100);
 		return flux;
 	};
 
 	Flux.prototype.cubicFlux = function(srcLat, srcLng, destLat, destLng) {
 		// convert {latitude,longitude} coordinates to {x,y,z} ones
-		var srcPoint = this.coordToPoint(srcLat, srcLng, this.mesh.geometry.radius);
-		var destPoint = this.coordToPoint(destLat, destLng, this.mesh.geometry.radius);
+		var srcPoint = this.coordToPoint(srcLat, srcLng);
+		var destPoint = this.coordToPoint(destLat, destLng);
 		// distance between the src and dest
 		var distance = srcPoint.clone().sub(destPoint).length();
 		// src control point
@@ -43,27 +42,26 @@
 		destControl.multiplyScalar(distance);
 		destControl.add(destPoint);
 		// create the cubic flux
-		var material = new THREE.LineBasicMaterial({color: 'red', linewidth: 1});
 		var curve = new THREE.CubicBezierCurve3(srcPoint, srcControl, destControl, destPoint);
 		var path = new THREE.CurvePath();
 		path.add(curve);
-		var geometry = path.createPointsGeometry(100);
-		var flux = new THREE.Line(geometry, material);
+		var flux = path.createPointsGeometry(100);
 		return flux;
 	};
 
 	Flux.prototype.doubleCubicFlux = function(srcLat, srcLng, destLat, destLng) {
 		// convert {latitude,longitude} coordinates to {x,y,z} ones
-		var srcPoint = this.coordToPoint(srcLat, srcLng, this.mesh.geometry.radius);
-		var destPoint = this.coordToPoint(destLat, destLng, this.mesh.geometry.radius);
+		var srcPoint = this.coordToPoint(srcLat, srcLng);
+		var destPoint = this.coordToPoint(destLat, destLng);
 		// distance between the src and dest
 		var distance = srcPoint.clone().sub(destPoint).length();
 		//	midpoint of the flux
-		var midCoord = this.midCoord(srcLat, srcLng, destLat, destLng);
-		var midPoint = this.coordToPoint(midCoord.latitude, midCoord.longitude, this.mesh.geometry.radius);
+		var midPoint = srcPoint.clone().add(destPoint).multiplyScalar(0.5);
+		midPoint.sub(this.mesh.position);
 		midPoint.normalize();
 		// set its position up in the air at radius + something
 		midPoint.multiplyScalar(this.mesh.geometry.radius + distance * 0.2); 
+		midPoint.add(this.mesh.position);
 		// calculate the normal from the src and dest points
 		var normal = srcPoint.clone().sub(destPoint);
 		normal.normalize();
@@ -84,38 +82,20 @@
 		points = points.splice(0,points.length-1);
 		points = points.concat(destBezier.getPoints(50));
 		// create the flux
-		var geometry = new THREE.Geometry();
-		geometry.vertices = points;
-		var material = new THREE.LineBasicMaterial({color: 'blue', linewidth: 1});
-		var flux = new THREE.Line(geometry, material);
+		var flux = new THREE.Geometry();
+		flux.vertices = points;
 		return flux;
 	};
 
-	Flux.prototype.coordToPoint = function(lat, lng, radius) {
+	Flux.prototype.coordToPoint = function(lat, lng) {
 		var phi = (90-lat) * Math.PI/180;
 		var theta = (180-lng) * Math.PI/180;
 		var point = new THREE.Vector3();
-		point.x = radius * Math.sin(phi) * Math.cos(theta);
-		point.y = radius * Math.cos(phi);
-		point.z = radius * Math.sin(phi) * Math.sin(theta);
+		point.x = this.mesh.geometry.radius * Math.sin(phi) * Math.cos(theta);
+		point.y = this.mesh.geometry.radius * Math.cos(phi);
+		point.z = this.mesh.geometry.radius * Math.sin(phi) * Math.sin(theta);
+		point.add(this.mesh.position);
 		return point;
-	};
-
-	Flux.prototype.midCoord = function(srcLat, srcLng, destLat, destLng) {
-		var phi1 = srcLat * Math.PI / 180, 
-			theta1 = srcLng * Math.PI / 180,
-			phi2 = destLat * Math.PI / 180,
-			deltaLng = (destLng - srcLng) * Math.PI / 180;
-		var bearingX = Math.cos(phi2) * Math.cos(deltaLng);
-		var bearingY = Math.cos(phi2) * Math.sin(deltaLng);
-		var phi3 = Math.atan2(
-				Math.sin(phi1) + Math.sin(phi2),
-				Math.sqrt((Math.cos(phi1) + bearingX) * (Math.cos(phi1) + bearingX) + bearingY*bearingY)
-		);
-		var theta3 = theta1 + Math.atan2(bearingY, Math.cos(phi1) + bearingX);
-		// normalise to -180..+180º
-		theta3 = (theta3 + 3*Math.PI) % (2*Math.PI) - Math.PI;
-		return {latitude: phi3 * 180/ Math.PI, longitude: theta3 * 180/ Math.PI};
 	};
 
 	window.Flux = Flux;

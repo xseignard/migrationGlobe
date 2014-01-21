@@ -4,6 +4,8 @@
 
 	var container, stats, camera, controls, scene, renderer;
 
+	var uniforms, attributes;
+
 	init();
 	animate();
 
@@ -36,11 +38,36 @@
 
 		// create a globe representing the earth
 		var earth = new Globe({
-			texture: 'assets/img/world_4k.jpg'
+			texture: 'assets/img/world_4k.jpg',
+			radius: 300
 		});
+		
 		scene.add(earth);
 		var flux = new Flux(earth);
 
+		// some basic materials
+		//var material = new THREE.LineBasicMaterial({color: 'red', linewidth: 1});
+		//var material = new THREE.LineDashedMaterial({color: 0xffaa00, dashSize: 3, gapSize: 1, linewidth: 2});
+
+		// manipulated uniforms in the shaders
+		uniforms = {
+			opacity: {type: 'f', value: 0.7},
+			color: {type: 'c', value: new THREE.Color(0xff0000)}
+		};
+
+		// shader material
+		var shaderMaterial = new THREE.ShaderMaterial({
+			uniforms: uniforms,
+			attributes: attributes,
+			vertexShader: document.getElementById('vertexshader').textContent,
+			fragmentShader: document.getElementById('fragmentshader').textContent,
+			blending: THREE.AdditiveBlending,
+			depthTest: true,
+			transparent: true,
+			linewidth: 2
+		});
+
+		// start constructing the lines
 		var home = {latitude:47.21176, longitude:-1.57300};
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', 'assets/data/capitals.json', true);
@@ -48,16 +75,12 @@
 			if (xhr.readyState === 4 && xhr.status === 200) {
 				var data = JSON.parse(xhr.responseText);
 				var current;
-				for (var i = 0; i < 5; i++) {
+				for (var i = 0; i < data.length; i++) {
 					current = data[i];
 					console.log(current.capital);
-					var quadraticFlux = flux.quadraticFlux(home.latitude, home.longitude, current.latitude, current.longitude);
-					var cubicFlux = flux.cubicFlux(home.latitude, home.longitude, current.latitude, current.longitude);
 					var doubleCubicFlux = flux.doubleCubicFlux(home.latitude, home.longitude, current.latitude, current.longitude);
-					scene.add(quadraticFlux);
-					scene.add(cubicFlux);
-					scene.add(doubleCubicFlux);
-					render();
+					var currentFlux = new THREE.Line(doubleCubicFlux, shaderMaterial, THREE.LinePieces);
+					scene.add(currentFlux);
 				}
 			}
 		};
@@ -73,12 +96,19 @@
 
 	function animate() {
 		requestAnimationFrame(animate);
+		render();
+		stats.update();
 		controls.update();
 	}
 
 	function render() {
+		// play with opacity
+		var time = Date.now() * 0.001;
+		uniforms.opacity.value = Math.min(1, 0.5+Math.sin(time));
+		// play with color
+		uniforms.color.value.offsetHSL(0.0005,0,0);
+		// tell the renderer to do its job: RENDERING!
 		renderer.render(scene, camera);
-		stats.update();
 	}
 
 })();

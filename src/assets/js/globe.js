@@ -2,7 +2,7 @@
 	'use strict';
 	var Globe = function(opts) {
 		// compute options
-		var opts = opts || {};
+		opts = opts || {};
 		var radius = opts.radius || 200;
 		var widthSegments = opts.widthSegments || 40;
 		var heightSegments = opts.heightSegments || 30;
