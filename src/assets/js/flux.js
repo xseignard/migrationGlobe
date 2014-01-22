@@ -1,7 +1,8 @@
 (function() {
 	'use strict';
-	var Flux = function(mesh) {
+	var Flux = function(mesh, numberOfPoints) {
 		this.mesh = mesh;
+		this.numberOfPoints = numberOfPoints;
 	};
 
 	Flux.prototype.quadraticFlux = function(srcLat, srcLng, destLat, destLng) {
@@ -21,7 +22,7 @@
 		var curve = new THREE.QuadraticBezierCurve3(srcPoint, controlPoint, destPoint);
 		var path = new THREE.CurvePath();
 		path.add(curve);
-		var flux = path.createPointsGeometry(100);
+		var flux = path.createPointsGeometry(this.numberOfPoints);
 		return flux;
 	};
 
@@ -45,7 +46,7 @@
 		var curve = new THREE.CubicBezierCurve3(srcPoint, srcControl, destControl, destPoint);
 		var path = new THREE.CurvePath();
 		path.add(curve);
-		var flux = path.createPointsGeometry(100);
+		var flux = path.createPointsGeometry(this.numberOfPoints);
 		return flux;
 	};
 
@@ -77,10 +78,10 @@
 		var srcBezier = new THREE.CubicBezierCurve3(srcPoint, srcPoint, srcControl, midPoint);											
 		var destBezier = new THREE.CubicBezierCurve3(midPoint, destControl, destPoint, destPoint);
 		// get the points from the 2 bezier curves that will enable the creation of the flux
-		var points = srcBezier.getPoints(50);
+		var points = srcBezier.getPoints(this.numberOfPoints/2);
 		// remove the last sampled point since it's the starting point of the dest bezier
 		points = points.splice(0,points.length-1);
-		points = points.concat(destBezier.getPoints(50));
+		points = points.concat(destBezier.getPoints(this.numberOfPoints));
 		// create the flux
 		var flux = new THREE.Geometry();
 		flux.vertices = points;

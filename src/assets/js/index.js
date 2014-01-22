@@ -43,28 +43,35 @@
 		});
 		
 		scene.add(earth);
-		var flux = new Flux(earth);
+		var numberOfPoints = 50;
+		var flux = new Flux(earth, numberOfPoints);
 
 		// some basic materials
 		//var material = new THREE.LineBasicMaterial({color: 'red', linewidth: 1});
 		//var material = new THREE.LineDashedMaterial({color: 0xffaa00, dashSize: 3, gapSize: 1, linewidth: 2});
 
+		// texture passed to the shader
+		var shaderTexture = THREE.ImageUtils.loadTexture('assets/img/texture.16.png');
+		shaderTexture.wrapS = THREE.RepeatWrapping;
+		shaderTexture.wrapT = THREE.RepeatWrapping;
+
 		// manipulated uniforms in the shaders
 		uniforms = {
-			opacity: {type: 'f', value: 0.7},
-			color: {type: 'c', value: new THREE.Color(0xff0000)}
+			color: {type: 'c', value: new THREE.Color(0xff0000)},
+			texture: {type: 't', value: shaderTexture},
+			displacement: {type: 'f', value: 0.0}
 		};
 
 		// shader material
-		var shaderMaterial = new THREE.ShaderMaterial({
+		var material = new THREE.ShaderMaterial({
 			uniforms: uniforms,
-			attributes: attributes,
 			vertexShader: Shaders.vertex1,
 			fragmentShader: Shaders.fragment1,
 			blending: THREE.AdditiveBlending,
 			depthTest: true,
+			depthWrite: false,
 			transparent: true,
-			linewidth: 2
+			linewidth: 1
 		});
 
 		// start constructing the lines
@@ -77,9 +84,9 @@
 				var current;
 				for (var i = 0; i < data.length; i++) {
 					current = data[i];
-					console.log(current.capital);
+					//uniforms.displacement.value = i/data.length;
 					var doubleCubicFlux = flux.doubleCubicFlux(home.latitude, home.longitude, current.latitude, current.longitude);
-					var currentFlux = new THREE.Line(doubleCubicFlux, shaderMaterial, THREE.LinePieces);
+					var currentFlux = new THREE.Line(doubleCubicFlux, material);//, THREE.LinePieces);
 					scene.add(currentFlux);
 				}
 			}
@@ -102,9 +109,8 @@
 	}
 
 	function render() {
-		// play with opacity
-		var time = Date.now() * 0.001;
-		uniforms.opacity.value = Math.min(1, 0.5+Math.sin(time));
+		// play with the parameter that moves the texture
+		uniforms.displacement.value += 0.008;
 		// play with color
 		uniforms.color.value.offsetHSL(0.0005,0,0);
 		// tell the renderer to do its job: RENDERING!
