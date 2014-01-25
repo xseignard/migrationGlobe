@@ -6,6 +6,13 @@
 
 	var uniforms, attributes;
 
+	var GuiControls = function() {
+		this.speed = 0.004;
+		this.color = '#00d3e1';
+	};
+
+	var guiControls = new GuiControls();
+
 	init();
 	animate();
 
@@ -25,6 +32,11 @@
 
 		stats = new Stats();
 		document.body.appendChild(stats.domElement);
+
+		// dat.gui
+		var gui = new dat.GUI();
+		gui.add(guiControls, 'speed', 0.001, 0.03);
+		gui.addColor(guiControls, 'color');
 
 		renderer = new THREE.WebGLRenderer({antialias: true});
 		renderer.setSize(width, height);
@@ -110,9 +122,9 @@
 
 	function render() {
 		// play with the parameter that moves the texture
-		uniforms.displacement.value += 0.008;
+		uniforms.displacement.value += guiControls.speed;
 		// play with color
-		uniforms.color.value.offsetHSL(0.0005,0,0);
+		uniforms.color.value = new THREE.Color(guiControls.color);
 		// tell the renderer to do its job: RENDERING!
 		renderer.render(scene, camera);
 	}

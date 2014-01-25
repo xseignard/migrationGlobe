@@ -81,7 +81,7 @@
 		var points = srcBezier.getPoints(this.numberOfPoints/2);
 		// remove the last sampled point since it's the starting point of the dest bezier
 		points = points.splice(0,points.length-1);
-		points = points.concat(destBezier.getPoints(this.numberOfPoints));
+		points = points.concat(destBezier.getPoints(this.numberOfPoints/2));
 		// create the flux
 		var flux = new THREE.Geometry();
 		flux.vertices = points;
