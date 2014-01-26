@@ -2,9 +2,9 @@
 	'use strict';
 	if (!Detector.webgl) Detector.addGetWebGLMessage();
 
-	var container, stats, camera, controls, scene, renderer;
+	var container, stats, camera, controls, scene, renderer, earth, projector;
 
-	var uniforms, attributes;
+	var uniforms;
 
 	var GuiControls = function() {
 		this.speed = 0.004;
@@ -22,8 +22,12 @@
 		var width = window.innerWidth;
 		var height = window.innerHeight;
 
+		scene = new THREE.Scene();
+		scene.fog = new THREE.Fog(0x111111, 1800, 2000);
+
 		camera = new THREE.PerspectiveCamera(45, width/height, 1, 2000);
 		camera.position.z = 1500;
+		camera.lookAt(scene.position);
 
 		controls = new THREE.OrbitControls(camera);
 		controls.minDistance = 500;
@@ -43,13 +47,13 @@
 		renderer.domElement.style.position = 'absolute';
 		container.appendChild(renderer.domElement);
 
-		scene = new THREE.Scene();
-		scene.fog = new THREE.Fog(0x111111, 1800, 2000);
-
 		window.addEventListener('resize', onWindowResize, false);
+		document.addEventListener('mousedown', onDocumentMouseDown, false);
+
+		projector = new THREE.Projector();
 
 		// create a globe representing the earth
-		var earth = new Globe({
+		earth = new Globe({
 			texture: 'assets/img/world_4k.jpg',
 			radius: 300
 		});
@@ -111,6 +115,30 @@
 		camera.updateProjectionMatrix();
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		render();
+	}
+
+	function onDocumentMouseDown(event) {
+		// mouse coords
+		var mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+		var mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+		var vector = new THREE.Vector3(mouseX, mouseY, camera.near);
+		// convert the [-1, 1] screen coordinate into a world coordinate on the near plane
+		var projector = new THREE.Projector();
+		projector.unprojectVector(vector, camera);
+		// ray cast from camera to vector deduced by the click
+		var raycaster = new THREE.Raycaster(camera.position, vector.sub(camera.position).normalize());
+		// see if the ray from the camera into the world hits the globe
+		var intersects = raycaster.intersectObject(earth, true);
+		// if there is one (or more) intersections
+		if (intersects.length > 0) {
+			console.log(intersects[1]);
+			var position = intersects[1].point;
+			var geometry = new THREE.CubeGeometry(10,10,10);
+			var material = new THREE.MeshBasicMaterial({color: 'red'});
+			var cube = new THREE.Mesh(geometry, material);
+			cube.position = position;
+			scene.add(cube);
+		}
 	}
 
 	function animate() {
