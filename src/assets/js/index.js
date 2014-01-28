@@ -2,7 +2,7 @@
 	'use strict';
 	if (!Detector.webgl) Detector.addGetWebGLMessage();
 
-	var container, stats, camera, controls, scene, renderer, earth, projector;
+	var container, stats, camera, controls, scene, renderer, earth;
 
 	var uniforms;
 
@@ -15,6 +15,7 @@
 
 	init();
 	animate();
+	drawBorders();
 
 	function init() {
 		// setup of camera, controls, stats, renderer and scene
@@ -42,7 +43,9 @@
 		gui.add(guiControls, 'speed', 0.001, 0.03);
 		gui.addColor(guiControls, 'color');
 
-		renderer = new THREE.WebGLRenderer({antialias: true});
+		renderer = new THREE.WebGLRenderer({
+			antialias: true
+		});
 		renderer.setSize(width, height);
 		renderer.domElement.style.position = 'absolute';
 		container.appendChild(renderer.domElement);
@@ -50,15 +53,16 @@
 		window.addEventListener('resize', onWindowResize, false);
 		document.addEventListener('mousedown', onDocumentMouseDown, false);
 
-		projector = new THREE.Projector();
-
 		// create a globe representing the earth
 		earth = new Globe({
 			texture: 'assets/img/world_4k.jpg',
 			radius: 300
 		});
-		
 		scene.add(earth);
+
+		var axisHelper = new THREE.AxisHelper(earth.geometry.radius*2);
+		scene.add(axisHelper);
+
 		var numberOfPoints = 50;
 		var flux = new Flux(earth, numberOfPoints);
 
@@ -118,9 +122,10 @@
 	}
 
 	function onDocumentMouseDown(event) {
-		// mouse coords
-		var mouseX = (event.clientX / window.innerWidth) * 2 - 1;
-		var mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
+		var gl = renderer.context;
+		// mouse coords converted in -1/+1 where center is the center of the window
+		var mouseX = (event.clientX / gl.canvas.clientWidth) * 2 - 1;
+		var mouseY = -(event.clientY / gl.canvas.clientHeight) * 2 + 1;
 		var vector = new THREE.Vector3(mouseX, mouseY, camera.near);
 		// convert the [-1, 1] screen coordinate into a world coordinate on the near plane
 		var projector = new THREE.Projector();
@@ -131,8 +136,11 @@
 		var intersects = raycaster.intersectObject(earth, true);
 		// if there is one (or more) intersections
 		if (intersects.length > 0) {
-			console.log(intersects[1]);
-			var position = intersects[1].point;
+			var position = intersects[0].point;
+			var latLon = GeoUtils.xyzToLatLon(position, earth);
+			GeoUtils.getCountryCodeFromOSM(latLon.lat, latLon.lon, function(country) {
+				console.log(country);
+			});
 			var geometry = new THREE.CubeGeometry(10,10,10);
 			var material = new THREE.MeshBasicMaterial({color: 'red'});
 			var cube = new THREE.Mesh(geometry, material);
@@ -155,6 +163,28 @@
 		uniforms.color.value = new THREE.Color(guiControls.color);
 		// tell the renderer to do its job: RENDERING!
 		renderer.render(scene, camera);
+	}
+
+	function drawBorders() {
+		var bordersGeometry = new THREE.Geometry();
+		var material = new THREE.LineBasicMaterial({color: 'red', linewidth: 1});
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', 'assets/data/countries.geo.json', true);
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState === 4 && xhr.status === 200) {
+				var data = JSON.parse(xhr.responseText);
+				var countries = data.features;
+				for (var i=0; i<countries.length;i++) {
+					var country = countries[i];
+					var geometry = GeoUtils.geoJsonToGeometry(country, earth);
+					THREE.GeometryUtils.merge(bordersGeometry, geometry);
+					console.log(i + ' : added ' + country.properties.name + ' : ' + country.geometry.type);
+				}
+				var mesh = new THREE.Line(bordersGeometry, material);
+				scene.add(mesh);
+			}
+		};
+		xhr.send(null);
 	}
 
 })();

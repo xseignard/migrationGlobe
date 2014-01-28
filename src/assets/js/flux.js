@@ -7,11 +7,11 @@
 
 	Flux.prototype.quadraticFlux = function(srcLat, srcLng, destLat, destLng) {
 		// convert {latitude,longitude} coordinates to {x,y,z} ones
-		var srcPoint = this.coordToPoint(srcLat, srcLng);
-		var destPoint = this.coordToPoint(destLat, destLng);
+		var srcPoint = GeoUtils.latLonToXyz(srcLat, srcLng, this.mesh);
+		var destPoint = GeoUtils.latLonToXyz(destLat, destLng, this.mesh);
 		// distance between the src and dest
 		var distance = srcPoint.clone().sub(destPoint).length();
-		// get the {x,y,z} position of the middle point of the arc between src and dest and on the sphere 
+		// get the {x,y,z} position of the middle point of the arc between src and dest and on the sphere
 		var controlPoint = srcPoint.clone().add(destPoint).multiplyScalar(0.5);
 		controlPoint.sub(this.mesh.position);
 		controlPoint.normalize();
@@ -28,8 +28,8 @@
 
 	Flux.prototype.cubicFlux = function(srcLat, srcLng, destLat, destLng) {
 		// convert {latitude,longitude} coordinates to {x,y,z} ones
-		var srcPoint = this.coordToPoint(srcLat, srcLng);
-		var destPoint = this.coordToPoint(destLat, destLng);
+		var srcPoint = GeoUtils.latLonToXyz(srcLat, srcLng, this.mesh);
+		var destPoint = GeoUtils.latLonToXyz(destLat, destLng, this.mesh);
 		// distance between the src and dest
 		var distance = srcPoint.clone().sub(destPoint).length();
 		// src control point
@@ -52,8 +52,8 @@
 
 	Flux.prototype.doubleCubicFlux = function(srcLat, srcLng, destLat, destLng) {
 		// convert {latitude,longitude} coordinates to {x,y,z} ones
-		var srcPoint = this.coordToPoint(srcLat, srcLng);
-		var destPoint = this.coordToPoint(destLat, destLng);
+		var srcPoint = GeoUtils.latLonToXyz(srcLat, srcLng, this.mesh);
+		var destPoint = GeoUtils.latLonToXyz(destLat, destLng, this.mesh);
 		// distance between the src and dest
 		var distance = srcPoint.clone().sub(destPoint).length();
 		//	midpoint of the flux
@@ -67,7 +67,7 @@
 		var normal = srcPoint.clone().sub(destPoint);
 		normal.normalize();
 		// calculate control points
-		var srcControl = midPoint.clone().add(normal.clone().multiplyScalar(distance/2));					
+		var srcControl = midPoint.clone().add(normal.clone().multiplyScalar(distance/2));
 		var destControl = midPoint.clone().add(normal.clone().multiplyScalar(-distance/2));
 		// create 2 cubic bezier:
 		// - one from src point to mid point
@@ -75,7 +75,7 @@
 		// the bezier will pass through the mid point 
 		// and since you can place it, it's easier to draw a nice route
 		// first (resp. last) control point is the same as the src (resp. dest), it gives better results than a quadratic bezier
-		var srcBezier = new THREE.CubicBezierCurve3(srcPoint, srcPoint, srcControl, midPoint);											
+		var srcBezier = new THREE.CubicBezierCurve3(srcPoint, srcPoint, srcControl, midPoint);
 		var destBezier = new THREE.CubicBezierCurve3(midPoint, destControl, destPoint, destPoint);
 		// get the points from the 2 bezier curves that will enable the creation of the flux
 		var points = srcBezier.getPoints(this.numberOfPoints/2);
@@ -88,17 +88,5 @@
 		return flux;
 	};
 
-	Flux.prototype.coordToPoint = function(lat, lng) {
-		var phi = (90-lat) * Math.PI/180;
-		var theta = (180-lng) * Math.PI/180;
-		var point = new THREE.Vector3();
-		point.x = this.mesh.geometry.radius * Math.sin(phi) * Math.cos(theta);
-		point.y = this.mesh.geometry.radius * Math.cos(phi);
-		point.z = this.mesh.geometry.radius * Math.sin(phi) * Math.sin(theta);
-		point.add(this.mesh.position);
-		return point;
-	};
-
 	window.Flux = Flux;
-
 })();
