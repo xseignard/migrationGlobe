@@ -141,7 +141,7 @@
 			GeoUtils.getCountryCodeFromOSM(latLon.lat, latLon.lon, function(country) {
 				console.log(country);
 			});
-			var geometry = new THREE.CubeGeometry(10,10,10);
+			var geometry = new THREE.CubeGeometry(1,1,1);
 			var material = new THREE.MeshBasicMaterial({color: 'red'});
 			var cube = new THREE.Mesh(geometry, material);
 			cube.position = position;
@@ -180,7 +180,7 @@
 					THREE.GeometryUtils.merge(bordersGeometry, geometry);
 					console.log(i + ' : added ' + country.properties.name + ' : ' + country.geometry.type);
 				}
-				var mesh = new THREE.Line(bordersGeometry, material);
+				var mesh = new THREE.Line(bordersGeometry, material, THREE.LinePieces);
 				scene.add(mesh);
 			}
 		};
