@@ -45,35 +45,37 @@
 
 	// converts a geojson feature (Polygon or MultiPolygon) to a THREE js geometry on the given sphere
 	GeoUtils.geoJsonToGeometry = function(feature, mesh) {
+		var polygon;
 		var geometry = new THREE.Geometry();
+
 		// single polygon with potential holes
 		if (feature.geometry.type === 'Polygon') {
-			var polygon = feature.geometry.coordinates;
-			for (var j = 0; j < polygon.length; j++) {
-				var ring = polygon[j];
-				for (var k = 0; k < ring.length; k++) {
-					var point = ring[k];
-					var position = this.latLonToXyz(point[1], point[0], mesh);
+			polygon = feature.geometry.coordinates;
+			this.computePolygon(polygon, geometry, mesh);
+		}
+		// multi polygon, compute each
+		else if (feature.geometry.type === 'MultiPolygon') {
+			var polygons = feature.geometry.coordinates;
+			for (var i = 0; i < polygons.length; i++) {
+				polygon = polygons[i];
+				this.computePolygon(polygon, geometry, mesh);
+			}
+		}
+		return geometry;
+	};
+
+	GeoUtils.computePolygon = function(polygon, geometry, mesh) {
+		for (var i = 0; i < polygon.length; i++) {
+			var ring = polygon[i];
+			for (var j = 0; j < ring.length; j++) {
+				var point = ring[j];
+				var position = this.latLonToXyz(point[1], point[0], mesh);
+				geometry.vertices.push(position);
+				if (j!==0 && j!==ring.length-1) {
 					geometry.vertices.push(position);
 				}
 			}
 		}
-		// multi polygon
-		else {
-			var polygons = feature.geometry.coordinates;
-			for (var j = 0; j < polygons.length; j++) {
-				var polygon = polygons[j];
-				for (var k = 0; k < polygon.length; k++) {
-					var ring = polygon[k];
-					for (var l = 0; l < ring.length; l++) {
-						var point = ring[l];
-						var position = this.latLonToXyz(point[1], point[0], mesh);
-						geometry.vertices.push(position);
-					}
-				}
-			}
-		}
-		return geometry;
 	};
 
 	// tie this object to the global window one
