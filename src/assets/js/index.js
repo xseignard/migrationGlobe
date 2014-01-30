@@ -8,7 +8,7 @@
 
 	var GuiControls = function() {
 		this.speed = 0.004;
-		this.color = '#00d3e1';
+		this.color = '#121314';
 	};
 
 	var guiControls = new GuiControls();
