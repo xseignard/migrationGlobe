@@ -43,6 +43,18 @@
 		xhr.send(null);
 	};
 
+	GeoUtils.getCountryCodeFromIndex = function(index, callback) {
+		var xhr = new XMLHttpRequest();
+		xhr.open('GET', 'assets/data/indexed_countries.json', true);
+		xhr.onreadystatechange = function() {
+			if (xhr.readyState === 4 && xhr.status === 200) {
+				var data = JSON.parse(xhr.responseText);
+				callback(data[index-1]);
+			}
+		};
+		index > 0 ? xhr.send(null) : callback(null);
+	};
+
 	// converts a geojson feature (Polygon or MultiPolygon) to a THREE js geometry on the given sphere
 	GeoUtils.geoJsonToGeometry = function(feature, mesh) {
 		var polygon;

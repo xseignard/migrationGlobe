@@ -2,8 +2,8 @@
 	'use strict';
 	if (!Detector.webgl) Detector.addGetWebGLMessage();
 
-	var container, stats, camera, controls, scene, renderer, earth;
-
+	var container, stats, camera, controls, scene, renderer, earth, width, height;
+	var indexedScene, indexedRenderer, indexedEarth;
 	var uniforms;
 
 	var GuiControls = function() {
@@ -20,8 +20,8 @@
 	function init() {
 		// setup of camera, controls, stats, renderer and scene
 		container = document.getElementById('container');
-		var width = window.innerWidth;
-		var height = window.innerHeight;
+		width = window.innerWidth;
+		height = window.innerHeight;
 
 		scene = new THREE.Scene();
 		scene.fog = new THREE.Fog(0x111111, 1800, 2000);
@@ -59,6 +59,10 @@
 			radius: 300
 		});
 		scene.add(earth);
+
+		// create a non visible scene with the greyscale indexed map
+		// will be used to do color picking to retrieve countries
+		initHiddenScene();
 
 		var axisHelper = new THREE.AxisHelper(earth.geometry.radius*2);
 		scene.add(axisHelper);
@@ -114,11 +118,37 @@
 		xhr.send(null);
 	}
 
+	function initHiddenScene() {
+		indexedRenderer = new THREE.WebGLRenderer({
+			antialias: true,
+			preserveDrawingBuffer: true
+		});
+		indexedRenderer.setSize(width, height);
+		indexedScene = new THREE.Scene();
+		indexedEarth = new Globe({
+			texture: 'assets/img/indexed_map.png',
+			radius: 300
+		});
+		indexedScene.add(indexedEarth);
+	}
+
 	function onWindowResize() {
 		camera.aspect = window.innerWidth/window.innerHeight;
 		camera.updateProjectionMatrix();
 		renderer.setSize(window.innerWidth, window.innerHeight);
+		indexedRenderer.setSize(window.innerWidth, window.innerHeight);
 		render();
+	}
+
+	function countryIndex(event){
+		var gl = indexedRenderer.context;
+		gl.preserveDrawingBuffer = true;
+		var mouseX = Math.floor(event.clientX);
+		var mouseY = Math.floor(gl.canvas.height - event.clientY);
+		var buf = new Uint8Array(4);
+		gl.readPixels(mouseX, mouseY, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+		gl.preserveDrawingBuffer = false;
+		return buf[0];
 	}
 
 	function onDocumentMouseDown(event) {
@@ -137,8 +167,8 @@
 		// if there is one (or more) intersections
 		if (intersects.length > 0) {
 			var position = intersects[0].point;
-			var latLon = GeoUtils.xyzToLatLon(position, earth);
-			GeoUtils.getCountryCodeFromOSM(latLon.lat, latLon.lon, function(country) {
+			var index = countryIndex(event);
+			GeoUtils.getCountryCodeFromIndex(index, function(country) {
 				console.log(country);
 			});
 			var geometry = new THREE.CubeGeometry(1,1,1);
@@ -161,8 +191,9 @@
 		uniforms.displacement.value += guiControls.speed;
 		// play with color
 		uniforms.color.value = new THREE.Color(guiControls.color);
-		// tell the renderer to do its job: RENDERING!
+		// tell the renderers to do their job: RENDERING!
 		renderer.render(scene, camera);
+		indexedRenderer.render(indexedScene, camera);
 	}
 
 	function drawBorders() {
