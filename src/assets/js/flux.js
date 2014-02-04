@@ -1,14 +1,29 @@
 (function() {
 	'use strict';
+
+	/**
+	 * Flux constructor
+	 * @property {THREE.Mesh} mesh - the mesh on which the flux will be calculated
+	 * @property {Number} numberOfPoints - the number of points to compute for a flux, deflauts to 50
+	 */
 	var Flux = function(mesh, numberOfPoints) {
 		this.mesh = mesh;
-		this.numberOfPoints = numberOfPoints;
+		this.numberOfPoints = numberOfPoints || 50;
 	};
 
-	Flux.prototype.quadraticFlux = function(srcLat, srcLng, destLat, destLng) {
+	/**
+	 * Create a geometry for the flux, based on quadratic Bezier curves,
+	 * between the source and dest coords
+	 * @param {Number} srcLat - source latitude
+	 * @param {Number} srcLon - source longitude
+	 * @param {Number} destLat - destination latitude
+	 * @param {Number} destLon - destination longitude
+	 * @return {THREE.Geometry} the calculated THREE.js geometry
+	 */
+	Flux.prototype.quadraticFlux = function(srcLat, srcLon, destLat, destLon) {
 		// convert {latitude,longitude} coordinates to {x,y,z} ones
-		var srcPoint = GeoUtils.latLonToXyz(srcLat, srcLng, this.mesh);
-		var destPoint = GeoUtils.latLonToXyz(destLat, destLng, this.mesh);
+		var srcPoint = GeoUtils.latLonToXyz(srcLat, srcLon, this.mesh);
+		var destPoint = GeoUtils.latLonToXyz(destLat, destLon, this.mesh);
 		// distance between the src and dest
 		var distance = srcPoint.clone().sub(destPoint).length();
 		// get the {x,y,z} position of the middle point of the arc between src and dest and on the sphere
@@ -26,10 +41,19 @@
 		return flux;
 	};
 
-	Flux.prototype.cubicFlux = function(srcLat, srcLng, destLat, destLng) {
+	/**
+	 * Create a geometry for the flux, based on cubic Bezier curves,
+	 * between the source and dest coords
+	 * @param {Number} srcLat - source latitude
+	 * @param {Number} srcLon - source longitude
+	 * @param {Number} destLat - destination latitude
+	 * @param {Number} destLon - destination longitude
+	 * @return {THREE.Geometry} the calculated THREE.js geometry
+	 */
+	Flux.prototype.cubicFlux = function(srcLat, srcLon, destLat, destLon) {
 		// convert {latitude,longitude} coordinates to {x,y,z} ones
-		var srcPoint = GeoUtils.latLonToXyz(srcLat, srcLng, this.mesh);
-		var destPoint = GeoUtils.latLonToXyz(destLat, destLng, this.mesh);
+		var srcPoint = GeoUtils.latLonToXyz(srcLat, srcLon, this.mesh);
+		var destPoint = GeoUtils.latLonToXyz(destLat, destLon, this.mesh);
 		// distance between the src and dest
 		var distance = srcPoint.clone().sub(destPoint).length();
 		// src control point
@@ -50,10 +74,19 @@
 		return flux;
 	};
 
-	Flux.prototype.doubleCubicFlux = function(srcLat, srcLng, destLat, destLng) {
+	/**
+	 * Create a geometry for the flux, based on two cubic Bezier curves,
+	 * between the source and a middle point, and this middle point and the destination one
+	 * @param {Number} srcLat - source latitude
+	 * @param {Number} srcLon - source longitude
+	 * @param {Number} destLat - destination latitude
+	 * @param {Number} destLon - destination longitude
+	 * @return {THREE.Geometry} the calculated THREE.js geometry
+	 */
+	Flux.prototype.doubleCubicFlux = function(srcLat, srcLon, destLat, destLon) {
 		// convert {latitude,longitude} coordinates to {x,y,z} ones
-		var srcPoint = GeoUtils.latLonToXyz(srcLat, srcLng, this.mesh);
-		var destPoint = GeoUtils.latLonToXyz(destLat, destLng, this.mesh);
+		var srcPoint = GeoUtils.latLonToXyz(srcLat, srcLon, this.mesh);
+		var destPoint = GeoUtils.latLonToXyz(destLat, destLon, this.mesh);
 		// distance between the src and dest
 		var distance = srcPoint.clone().sub(destPoint).length();
 		//	midpoint of the flux
@@ -88,5 +121,6 @@
 		return flux;
 	};
 
+	// tie this object to the global window one
 	window.Flux = Flux;
 })();
