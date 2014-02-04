@@ -4,11 +4,12 @@
 
 	var container, stats, camera, controls, scene, renderer, earth, width, height;
 
-	var globeUniforms, uniforms;
+	var globeUniforms, fluxUniforms;
 
 	var GuiControls = function() {
 		this.speed = 0.004;
-		this.color = '#121314';
+		this.fluxColor = '#121314';
+		this.clickColor = '#09F225';
 	};
 
 	var guiControls = new GuiControls();
@@ -41,10 +42,11 @@
 		// dat.gui
 		var gui = new dat.GUI();
 		gui.add(guiControls, 'speed', 0.001, 0.03);
-		gui.addColor(guiControls, 'color');
+		gui.addColor(guiControls, 'fluxColor');
+		gui.addColor(guiControls, 'clickColor');
 
 		renderer = new THREE.WebGLRenderer({
-			antialias: false
+			antialias: true
 		});
 		renderer.setSize(width, height);
 		renderer.domElement.style.position = 'absolute';
@@ -54,14 +56,20 @@
 		document.addEventListener('mousedown', onDocumentMouseDown, false);
 
 		// create a globe representing the earth
+		var texture = THREE.ImageUtils.loadTexture('assets/img/world_4k.jpg');
+		var index = THREE.ImageUtils.loadTexture('assets/img/indexed_map.png');
+		index.magFilter = THREE.NearestFilter;
+		index.minFilter = THREE.NearestFilter;
+		
 		globeUniforms = {
-			texture: {type: 't', value: THREE.ImageUtils.loadTexture('assets/img/world_4k.jpg')},
-			index: {type: 't', value: THREE.ImageUtils.loadTexture('assets/img/indexed_map.png')},
-			clicked: {type: 'f', value: 1.0}
+			texture: {type: 't', value: texture},
+			index: {type: 't', value: index},
+			clicked: {type: 'f', value: 0.0},
+			color: {type: 'c', value: new THREE.Color(0xff0000)},
 		};
 		var globeMaterial = new THREE.ShaderMaterial({
 			uniforms: globeUniforms,
-			vertexShader: Shaders.vertex1,
+			vertexShader: Shaders.noopVertex,
 			fragmentShader: Shaders.globeFragment
 		});
 		earth = new Globe({
@@ -87,7 +95,7 @@
 		shaderTexture.wrapT = THREE.RepeatWrapping;
 
 		// manipulated uniforms in the shaders
-		uniforms = {
+		fluxUniforms = {
 			color: {type: 'c', value: new THREE.Color(0xff0000)},
 			texture: {type: 't', value: shaderTexture},
 			displacement: {type: 'f', value: 0.0}
@@ -95,8 +103,8 @@
 
 		// shader material
 		var material = new THREE.ShaderMaterial({
-			uniforms: uniforms,
-			vertexShader: Shaders.vertex1,
+			uniforms: fluxUniforms,
+			vertexShader: Shaders.noopVertex,
 			fragmentShader: Shaders.fragment1,
 			blending: THREE.AdditiveBlending,
 			depthTest: true,
@@ -115,7 +123,7 @@
 				var current;
 				for (var i = 0; i < data.length; i++) {
 					current = data[i];
-					//uniforms.displacement.value = i/data.length;
+					//fluxUniforms.displacement.value = i/data.length;
 					var doubleCubicFlux = flux.doubleCubicFlux(home.latitude, home.longitude, current.latitude, current.longitude);
 					var currentFlux = new THREE.Line(doubleCubicFlux, material);//, THREE.LinePieces);
 					scene.add(currentFlux);
@@ -149,18 +157,11 @@
 		if (intersects.length > 0) {
 			var position = intersects[0].point;
 			GeoUtils.getIndex(position, earth, function(index) {
-				console.log(index);
 				globeUniforms.clicked.value = index/255;
 				GeoUtils.getCountryCodeFromIndex(index, function(country) {
 					console.log(country);
 				});
 			});
-
-			var geometry = new THREE.CubeGeometry(1,1,1);
-			var material = new THREE.MeshBasicMaterial({color: 'red'});
-			var cube = new THREE.Mesh(geometry, material);
-			cube.position = position;
-			scene.add(cube);
 		}
 	}
 
@@ -173,16 +174,17 @@
 
 	function render() {
 		// play with the parameter that moves the texture
-		uniforms.displacement.value += guiControls.speed;
+		fluxUniforms.displacement.value += guiControls.speed;
 		// play with color
-		uniforms.color.value = new THREE.Color(guiControls.color);
+		fluxUniforms.color.value = new THREE.Color(guiControls.fluxColor);
+		globeUniforms.color.value = new THREE.Color(guiControls.clickColor);
 		// tell the renderer to do its job: RENDERING!
 		renderer.render(scene, camera);
 	}
 
 	function drawBorders() {
 		var bordersGeometry = new THREE.Geometry();
-		var material = new THREE.LineBasicMaterial({color: 'red', linewidth: 1});
+		var material = new THREE.LineBasicMaterial({color: '#333', linewidth: 1});
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', 'assets/data/countries.geo.json', true);
 		xhr.onreadystatechange = function() {
