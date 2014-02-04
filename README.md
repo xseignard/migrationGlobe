@@ -10,7 +10,7 @@ See: [http://xseignard.github.io/migrationGlobe/](http://xseignard.github.io/mig
 
 To run it localy, run the following commands inside the root folder of the project: 
 
-- `sudo npm install gulp -g`
+- `[sudo] npm install gulp bower -g`
 - `npm install`
 - `bower install`
 - `gulp`
