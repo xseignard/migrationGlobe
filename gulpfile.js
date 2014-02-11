@@ -38,7 +38,7 @@ gulp.task('server', function() {
 	app.use('/bower_components', express.static(__dirname + '/bower_components'));
 	app.use('/tmp', express.static(__dirname + '/tmp'));
 	app.use(express.bodyParser());
-    app.listen(8080, function() {
+	app.listen(8080, function() {
 		gutil.log('Listening on 8080');
 	});
 });
@@ -79,7 +79,7 @@ gulp.task('img', function() {
 });
 
 // livereload server
-gulp.task('livereload', function(){  
+gulp.task('livereload', function(){
 	server.listen(35729, function(err){
 		if(err) return gutil.log(gutil.colors.bold.red(err));
 	});

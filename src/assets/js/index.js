@@ -60,7 +60,7 @@
 		var index = THREE.ImageUtils.loadTexture('assets/img/indexed_map.png');
 		index.magFilter = THREE.NearestFilter;
 		index.minFilter = THREE.NearestFilter;
-		
+
 		globeUniforms = {
 			texture: {type: 't', value: texture},
 			index: {type: 't', value: index},
@@ -203,5 +203,4 @@
 		};
 		xhr.send(null);
 	}
-
 })();

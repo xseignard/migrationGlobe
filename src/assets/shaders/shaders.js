@@ -1,7 +1,7 @@
 (function () {
 	'use strict';
 	var Shaders = {};
-	
+
 	// noop vertex shader
 	Shaders.noopVertex = `
 		varying vec2 vUv;
@@ -36,7 +36,7 @@
 			vec4 currentTexture = texture2D(texture, vUv);
 			vec4 currentIndex = texture2D(index, vUv);
 			float fader = 0.0;
-			if (abs(clicked-currentIndex.r)<0.0035 
+			if (abs(clicked-currentIndex.r)<0.0035
 				&& clicked/currentIndex.r >0.0) fader = 0.7;
 			gl_FragColor = mix(currentTexture, vec4(color,0.7), fader);
 		}

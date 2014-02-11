@@ -14,7 +14,6 @@
 		var geometry = new THREE.SphereGeometry(radius, widthSegments, heightSegments);
 		// create the globe
 		var planet = new THREE.Mesh(geometry, material);
-		planet.rotation.y = Math.PI;
 		return planet;
 	};
 	// tie this object to the global window one

@@ -10,11 +10,13 @@
 	 * @returns {Obejct} containing lat and lon coords
 	 */
 	GeoUtils.xyzToLatLon = function(point, mesh) {
-		var currentLat = 90 - Math.acos(point.y / mesh.geometry.radius)*180 / Math.PI;
-		var currentLon = 90 + Math.atan2(point.x , point.z)*180 / Math.PI % 360;
+		var currentLat = 90 - Math.acos(point.y/mesh.geometry.radius) * 180/Math.PI;
+		var currentLon = (270 + Math.atan2(point.x, point.z) * 180/Math.PI) % 360;
+		if (currentLon >= 180) currentLon -= 360;
+		console.log(currentLat, currentLon);
 		return {lat:currentLat, lon:currentLon};
 	};
-	
+
 	/**
 	 * Converts latitude and longitude to x,y,z coords, for the given mesh
 	 * @param {Number} lat - latitude
@@ -23,12 +25,12 @@
 	 * @returns {Obejct} containing x,y and z coords
 	 */
 	GeoUtils.latLonToXyz = function(lat,lon, mesh) {
-		var phi = (90-lat) * Math.PI/180;
-		var theta = (180-lon) * Math.PI/180;
+		var phi = lat * Math.PI/180;
+		var theta = lon * Math.PI/180;
 		var point = new THREE.Vector3();
-		point.x = mesh.geometry.radius * Math.sin(phi) * Math.cos(theta);
-		point.y = mesh.geometry.radius * Math.cos(phi);
-		point.z = mesh.geometry.radius * Math.sin(phi) * Math.sin(theta);
+		point.x = mesh.geometry.radius * Math.cos(phi) * Math.cos(theta);
+		point.y = mesh.geometry.radius * Math.sin(phi);
+		point.z = -mesh.geometry.radius * Math.cos(phi) * Math.sin(theta);
 		point.add(mesh.position);
 		return point;
 	};
