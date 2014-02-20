@@ -9,14 +9,14 @@
 	var GuiControls = function() {
 		this.speed = 0.004;
 		this.fluxColor = '#121314';
-		this.clickColor = '#09F225';
+		this.clickColor = '#7b7e9b';
 	};
 
 	var guiControls = new GuiControls();
 
 	init();
 	animate();
-	drawBorders();
+	//drawBorders();
 
 	function init() {
 		// setup of camera, controls, stats, renderer and scene
@@ -56,16 +56,21 @@
 		document.addEventListener('mousedown', onDocumentMouseDown, false);
 
 		// create a globe representing the earth
-		var texture = THREE.ImageUtils.loadTexture('assets/img/world_4k.jpg');
-		var index = THREE.ImageUtils.loadTexture('assets/img/indexed_map.png');
-		index.magFilter = THREE.NearestFilter;
-		index.minFilter = THREE.NearestFilter;
+		var worldMap = THREE.ImageUtils.loadTexture('assets/img/world_4k_bw.png');
+		var bordersMap = THREE.ImageUtils.loadTexture('assets/img/borders_map.png');
+		var continentsMap = THREE.ImageUtils.loadTexture('assets/img/continents_map.png');
+		var indexMap = THREE.ImageUtils.loadTexture('assets/img/indexed_map.png');
+
+		indexMap.magFilter = THREE.NearestFilter;
+		indexMap.minFilter = THREE.NearestFilter;
 
 		globeUniforms = {
-			texture: {type: 't', value: texture},
-			index: {type: 't', value: index},
+			worldMap: {type: 't', value: worldMap},
+			bordersMap: {type: 't', value: bordersMap},
+			continentsMap: {type: 't', value: continentsMap},
+			indexMap: {type: 't', value: indexMap},
 			clicked: {type: 'f', value: 0.0},
-			color: {type: 'c', value: new THREE.Color(0xff0000)},
+			borderColor: {type: 'c', value: new THREE.Color(0xff0000)},
 		};
 		var globeMaterial = new THREE.ShaderMaterial({
 			uniforms: globeUniforms,
@@ -105,7 +110,7 @@
 		var material = new THREE.ShaderMaterial({
 			uniforms: fluxUniforms,
 			vertexShader: Shaders.noopVertex,
-			fragmentShader: Shaders.fragment1,
+			fragmentShader: Shaders.fluxFragment,
 			blending: THREE.AdditiveBlending,
 			depthTest: true,
 			depthWrite: false,
@@ -177,7 +182,7 @@
 		fluxUniforms.displacement.value += guiControls.speed;
 		// play with color
 		fluxUniforms.color.value = new THREE.Color(guiControls.fluxColor);
-		globeUniforms.color.value = new THREE.Color(guiControls.clickColor);
+		globeUniforms.borderColor.value = new THREE.Color(guiControls.clickColor);
 		// tell the renderer to do its job: RENDERING!
 		renderer.render(scene, camera);
 	}

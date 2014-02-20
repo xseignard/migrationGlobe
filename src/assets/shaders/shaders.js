@@ -13,7 +13,7 @@
 	`;
 	// fragment shader that change color
 	// and moves a texture to get a moving effect
-	Shaders.fragment1 = `
+	Shaders.fluxFragment = `
 		uniform vec3 color;
 		uniform sampler2D texture;
 		uniform float displacement;
@@ -26,19 +26,29 @@
 	`;
 
 	Shaders.globeFragment = `
-		uniform sampler2D texture;
-		uniform sampler2D index;
+		uniform sampler2D worldMap;
+		uniform sampler2D bordersMap;
+		uniform sampler2D continentsMap;
+		uniform sampler2D indexMap;
 		uniform float clicked;
-		uniform vec3 color;
+		uniform vec3 borderColor;
 		varying vec2 vUv;
 
 		void main() {
-			vec4 currentTexture = texture2D(texture, vUv);
-			vec4 currentIndex = texture2D(index, vUv);
-			float fader = 0.0;
-			if (abs(clicked-currentIndex.r)<0.0035
-				&& clicked/currentIndex.r >0.0) fader = 0.7;
-			gl_FragColor = mix(currentTexture, vec4(color,0.7), fader);
+			vec4 borders = texture2D(bordersMap, vUv);
+			vec4 world = texture2D(worldMap, vUv) * 2.0;
+			vec4 continents = texture2D(continentsMap, vUv) / 5.0;
+			vec4 index = texture2D(indexMap, vUv);
+
+			vec4 globeCol = vec4(0.0, 0.0, 1.0, 1.0);
+
+			if (abs(clicked-index.r)<0.0035 && clicked/index.r >0.0) {
+				globeCol = vec4(borderColor,1.0);
+			}
+			float r = globeCol.r*world.r + borders.r + continents.r;
+			float g = globeCol.g*world.g + borders.g + continents.g;
+			float b = globeCol.b*world.b + borders.b + continents.b;
+			gl_FragColor = vec4(r,g,b,1.0);
 		}
 	`;
 
