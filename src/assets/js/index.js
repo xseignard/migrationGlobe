@@ -9,14 +9,15 @@
 	var GuiControls = function() {
 		this.speed = 0.004;
 		this.fluxColor = '#121314';
-		this.clickColor = '#7b7e9b';
+		this.clickColor = '#464ea2';
+		this.countryColor = '#242ec5';
+		this.borderColor = '#2237ff';
 	};
 
 	var guiControls = new GuiControls();
 
 	init();
 	animate();
-	//drawBorders();
 
 	function init() {
 		// setup of camera, controls, stats, renderer and scene
@@ -44,6 +45,8 @@
 		gui.add(guiControls, 'speed', 0.001, 0.03);
 		gui.addColor(guiControls, 'fluxColor');
 		gui.addColor(guiControls, 'clickColor');
+		gui.addColor(guiControls, 'countryColor');
+		gui.addColor(guiControls, 'borderColor');
 
 		renderer = new THREE.WebGLRenderer({
 			antialias: true
@@ -70,6 +73,8 @@
 			continentsMap: {type: 't', value: continentsMap},
 			indexMap: {type: 't', value: indexMap},
 			clicked: {type: 'f', value: 0.0},
+			clickColor: {type: 'c', value: new THREE.Color(0xff0000)},
+			countryColor: {type: 'c', value: new THREE.Color(0xff0000)},
 			borderColor: {type: 'c', value: new THREE.Color(0xff0000)},
 		};
 		var globeMaterial = new THREE.ShaderMaterial({
@@ -78,8 +83,7 @@
 			fragmentShader: Shaders.globeFragment
 		});
 		earth = new Globe({
-			texture: 'assets/img/world_4k.jpg',
-			radius: 300,
+			radius: 400,
 			material: globeMaterial
 		});
 		scene.add(earth);
@@ -182,30 +186,11 @@
 		fluxUniforms.displacement.value += guiControls.speed;
 		// play with color
 		fluxUniforms.color.value = new THREE.Color(guiControls.fluxColor);
-		globeUniforms.borderColor.value = new THREE.Color(guiControls.clickColor);
+		globeUniforms.clickColor.value = new THREE.Color(guiControls.clickColor);
+		globeUniforms.countryColor.value = new THREE.Color(guiControls.countryColor);
+		globeUniforms.borderColor.value = new THREE.Color(guiControls.borderColor);
 		// tell the renderer to do its job: RENDERING!
 		renderer.render(scene, camera);
 	}
 
-	function drawBorders() {
-		var bordersGeometry = new THREE.Geometry();
-		var material = new THREE.LineBasicMaterial({color: '#333', linewidth: 1});
-		var xhr = new XMLHttpRequest();
-		xhr.open('GET', 'assets/data/countries.geo.json', true);
-		xhr.onreadystatechange = function() {
-			if (xhr.readyState === 4 && xhr.status === 200) {
-				var data = JSON.parse(xhr.responseText);
-				var countries = data.features;
-				for (var i=0; i<countries.length;i++) {
-					var country = countries[i];
-					var geometry = GeoUtils.geoJsonToGeometry(country, earth);
-					THREE.GeometryUtils.merge(bordersGeometry, geometry);
-					console.log(i + ' : added ' + country.properties.name + ' : ' + country.geometry.type);
-				}
-				var mesh = new THREE.Line(bordersGeometry, material, THREE.LinePieces);
-				scene.add(mesh);
-			}
-		};
-		xhr.send(null);
-	}
 })();

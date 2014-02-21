@@ -81,52 +81,6 @@
 		index > 0 ? xhr.send(null) : callback(null);
 	};
 
-	/**
-	 * Converts a geojson feature (Polygon or MultiPolygon)
-	 * to a THREE js geometry on the given sphere
-	 * @param {Object} feature - geojson feature
-	 * @param {THREE.Mesh} mesh - the sphere geometry based mesh
-	 * @returns {THREE.Geometry} the deducted geometry
-	 */
-	GeoUtils.geoJsonToGeometry = function(feature, mesh) {
-		var polygon;
-		var geometry = new THREE.Geometry();
-		// single polygon with potential holes
-		if (feature.geometry.type === 'Polygon') {
-			polygon = feature.geometry.coordinates;
-			GeoUtils.computePolygon(polygon, geometry, mesh);
-		}
-		// multi polygon, compute each
-		else if (feature.geometry.type === 'MultiPolygon') {
-			var polygons = feature.geometry.coordinates;
-			for (var i = 0; i < polygons.length; i++) {
-				polygon = polygons[i];
-				GeoUtils.computePolygon(polygon, geometry, mesh);
-			}
-		}
-		return geometry;
-	};
-
-	/**
-	 * Compute the vertices of the given geojson polygon
-	 * @param {Array} polygon - each point series of the polygon (ring and potential holes)
-	 * @param {THREE.Geometry} geometry - THREE.js geometry holding the polygon vertices
-	 * @param {THREE.Mesh} mesh - mesh on which the geometry is applied
-	 */
-	GeoUtils.computePolygon = function(polygon, geometry, mesh) {
-		for (var i = 0; i < polygon.length; i++) {
-			var ring = polygon[i];
-			for (var j = 0; j < ring.length; j++) {
-				var point = ring[j];
-				var position = GeoUtils.latLonToXyz(point[1], point[0], mesh);
-				geometry.vertices.push(position);
-				if (j!==0 && j!==ring.length-1) {
-					geometry.vertices.push(position);
-				}
-			}
-		}
-	};
-
 	// tie this object to the global window one
 	window.GeoUtils = GeoUtils;
 })();
