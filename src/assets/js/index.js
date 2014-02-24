@@ -6,6 +6,8 @@
 
 	var globeUniforms, fluxUniforms;
 
+	var originX, originY;
+
 	var GuiControls = function() {
 		this.speed = 0.004;
 		this.fluxColor = '#121314';
@@ -56,6 +58,7 @@
 		container.appendChild(renderer.domElement);
 
 		window.addEventListener('resize', onWindowResize, false);
+		document.addEventListener('mouseup', onDocumentMouseUp, false);
 		document.addEventListener('mousedown', onDocumentMouseDown, false);
 
 		// create a globe representing the earth
@@ -87,9 +90,6 @@
 			material: globeMaterial
 		});
 		scene.add(earth);
-
-		var axisHelper = new THREE.AxisHelper(earth.geometry.radius*2);
-		scene.add(axisHelper);
 
 		var numberOfPoints = 50;
 		var flux = new Flux(earth, numberOfPoints);
@@ -150,6 +150,17 @@
 	}
 
 	function onDocumentMouseDown(event) {
+		// store the beginning coordinates of a click
+		// to check if it's a drag or not
+		originX = event.clientX;
+		originY = event.clientY;
+	}
+
+	function onDocumentMouseUp(event) {
+		// if the drag is longer than 3 pixels (x and y axis), it's just a drag, not a click
+		if (Math.abs(originX - event.clientX) > 3 && Math.abs(originY - event.clientY) > 3) {
+			return;
+		}
 		var gl = renderer.context;
 		// mouse coords converted in -1/+1 where center is the center of the window
 		var mouseX = (event.clientX / gl.canvas.clientWidth) * 2 - 1;
@@ -168,10 +179,22 @@
 			GeoUtils.getIndex(position, earth, function(index) {
 				globeUniforms.clicked.value = index/255;
 				GeoUtils.getCountryCodeFromIndex(index, function(country) {
-					console.log(country);
+					if (country) {
+						rotateGlobeTo(position);
+						console.log(country);
+					}
 				});
 			});
 		}
+	}
+
+	function rotateGlobeTo(position) {
+		// compute the target postion of the camera
+		var dist = new THREE.Vector3().subVectors(camera.position, earth.position).length();
+		var target = position.multiplyScalar(dist/earth.geometry.radius);
+		// tween the camera orginal postion to the target position
+		var tween = new TWEEN.Tween(camera.position).to(target, 500);
+		tween.start();
 	}
 
 	function animate() {
@@ -179,6 +202,7 @@
 		render();
 		stats.update();
 		controls.update();
+		TWEEN.update();
 	}
 
 	function render() {

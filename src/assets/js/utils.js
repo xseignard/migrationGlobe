@@ -13,7 +13,6 @@
 		var currentLat = 90 - Math.acos(point.y/mesh.geometry.radius) * 180/Math.PI;
 		var currentLon = (270 + Math.atan2(point.x, point.z) * 180/Math.PI) % 360;
 		if (currentLon >= 180) currentLon -= 360;
-		console.log(currentLat, currentLon);
 		return {lat:currentLat, lon:currentLon};
 	};
 

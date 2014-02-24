@@ -18,6 +18,7 @@
     "Detector": "https://raw2.github.com/mrdoob/three.js/master/examples/js/Detector.js",
     "OrbitControls": "https://raw2.github.com/mrdoob/three.js/master/examples/js/controls/OrbitControls.js",
     "dat-gui": "~0.5.0",
-    "stats.js": "*"
+    "stats.js": "*",
+    "tweenjs": "*"
   }
 }
