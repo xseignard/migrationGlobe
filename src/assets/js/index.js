@@ -189,11 +189,18 @@
 	}
 
 	function rotateGlobeTo(position) {
-		// compute the target postion of the camera
+		// compute the target position of the camera
 		var dist = new THREE.Vector3().subVectors(camera.position, earth.position).length();
 		var target = position.multiplyScalar(dist/earth.geometry.radius);
-		// tween the camera orginal postion to the target position
-		var tween = new TWEEN.Tween(camera.position).to(target, 500);
+		// tween the camera orginal position to the target position
+		var orig = camera.position.clone();
+		var tween = new TWEEN.Tween(orig).to(target, 500);
+		tween.easing(TWEEN.Easing.Quadratic.InOut);
+		tween.onUpdate(function(){
+			// the new camera position is the new orig value, multiplied by the
+			// distance between the center of the globe and the camera
+			camera.position = orig.clone().sub(earth.position).normalize().multiplyScalar(dist);
+		});
 		tween.start();
 	}
 
