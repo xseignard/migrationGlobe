@@ -10,7 +10,7 @@
 
 	var GuiControls = function() {
 		this.speed = 0.004;
-		this.fluxColor = '#121314';
+		this.fluxColor = '#913113';
 		this.clickColor = '#464ea2';
 		this.countryColor = '#242ec5';
 		this.borderColor = '#2237ff';
@@ -180,7 +180,7 @@
 				globeUniforms.clicked.value = index/255;
 				GeoUtils.getCountryCodeFromIndex(index, function(country) {
 					if (country) {
-						rotateGlobeTo(position);
+						cameraTo(position);
 						console.log(country);
 					}
 				});
@@ -188,7 +188,7 @@
 		}
 	}
 
-	function rotateGlobeTo(position) {
+	function cameraTo(position) {
 		// compute the target position of the camera
 		var dist = new THREE.Vector3().subVectors(camera.position, earth.position).length();
 		var target = position.multiplyScalar(dist/earth.geometry.radius);
