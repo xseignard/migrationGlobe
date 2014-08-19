@@ -178,7 +178,7 @@
 						cameraTo(position);
 						console.log(country);
 						// remove previous flux
-						scene.remove(currentFlux);
+						//scene.remove(currentFlux);
 						// create new flux
 						var currentFlux = flux.ThreeDFlux(home.latitude, home.longitude, country.latitude, country.longitude);
 						//currentFlux = new THREE.Line(currentFlux, fluxMaterial);//, THREE.LinePieces);
