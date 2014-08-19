@@ -182,7 +182,7 @@
 						// create new flux
 						var currentFlux = flux.ThreeDFlux(home.latitude, home.longitude, country.latitude, country.longitude);
 						//currentFlux = new THREE.Line(currentFlux, fluxMaterial);//, THREE.LinePieces);
-						currentFlux = new THREE.Mesh(currentFlux, mat);
+						currentFlux = new THREE.Mesh(currentFlux, material);
 						scene.add(currentFlux);
 					}
 				});
