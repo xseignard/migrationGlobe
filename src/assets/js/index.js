@@ -102,6 +102,8 @@
 		//material = new THREE.LineDashedMaterial({color: 0xffaa00, dashSize: 3, gapSize: 1, linewidth: 2});
 		material = new THREE.MeshBasicMaterial();
 		material.side = THREE.DoubleSide;
+		material.transparent = true;
+		material.opacity = 0.6;
 
 		// texture passed to the shader
 		var shaderTexture = THREE.ImageUtils.loadTexture('assets/img/texture.16.png');
