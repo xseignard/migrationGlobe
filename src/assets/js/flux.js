@@ -94,7 +94,7 @@
 		midPoint.sub(this.mesh.position);
 		midPoint.normalize();
 		// set its position up in the air at radius + something
-		midPoint.multiplyScalar(this.mesh.geometry.radius + distance * 0.2); 
+		midPoint.multiplyScalar(this.mesh.geometry.radius + distance * 0.2);
 		midPoint.add(this.mesh.position);
 		// calculate the normal from the src and dest points
 		var normal = srcPoint.clone().sub(destPoint);
@@ -105,7 +105,7 @@
 		// create 2 cubic bezier:
 		// - one from src point to mid point
 		// - one from mid point to dest point
-		// the bezier will pass through the mid point 
+		// the bezier will pass through the mid point
 		// and since you can place it, it's easier to draw a nice route
 		// first (resp. last) control point is the same as the src (resp. dest), it gives better results than a quadratic bezier
 		var srcBezier = new THREE.CubicBezierCurve3(srcPoint, srcPoint, srcControl, midPoint);
@@ -118,6 +118,61 @@
 		// create the flux
 		var flux = new THREE.Geometry();
 		flux.vertices = points;
+		return flux;
+	};
+
+	Flux.prototype.ThreeDFlux = function(srcLat, srcLon, destLat, destLon) {
+		// get the vertices of the doubleCubicFlux
+		var points = this.doubleCubicFlux(srcLat, srcLon, destLat, destLon).vertices;
+
+		// prepare vertices and face arrays
+		var newPoints = [];
+		newPoints[0] = points[0];
+		var faces = [];
+
+		// calculate normal and distance between src and dest
+		var first = points[0],
+			last = points[points.length-1],
+			middle = this.mesh.position;
+		var distance = first.clone().sub(last).length();
+		var firstMidPoint = first.clone().sub(last);
+		var secondMidPoint = last.clone().sub(middle);
+
+		var normal = firstMidPoint.cross(secondMidPoint);
+		normal.normalize();
+
+		for (var i = 1; i < points.length-1; i++) {
+			// calculate the two points from the bezier curve
+			var currentPoint = points[i];
+			var scalar = i < points.length/2 ? i : points.length - i;
+			var firstNewPoint = currentPoint.clone().add(normal.clone().multiplyScalar(scalar*distance/this.mesh.geometry.radius));
+			var secondNewPoint = currentPoint.clone().add(normal.clone().multiplyScalar(-scalar*distance/this.mesh.geometry.radius));
+			// push them to the vertices array
+			newPoints.push(firstNewPoint);
+			newPoints.push(secondNewPoint);
+			// then create the face from the points
+			if (newPoints.length <= 3) {
+				// first face is made of the 3 first vertices
+				var currentFace = new THREE.Face3(0, 1, 2);
+				faces.push(currentFace);
+			}
+			else {
+				var firstFace = new THREE.Face3(i*2, i*2-1, i*2-2);
+				var secondFace = new THREE.Face3(i*2-1, i*2-2, i*2-3);
+				faces.push(firstFace);
+				faces.push(secondFace);
+			}
+		}
+		// add the last point
+		newPoints.push(points[points.length-1]);
+		// create the last face, made of the 3 last vertices
+		var lastFace = new THREE.Face3(newPoints.length-1, newPoints.length-2, newPoints.length-3);
+		faces.push(lastFace);
+
+		// create the flux
+		var flux = new THREE.Geometry();
+		flux.vertices = newPoints;
+		flux.faces = faces;
 		return flux;
 	};
 

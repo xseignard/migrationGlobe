@@ -11,6 +11,7 @@
 			gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 		}
 	`;
+
 	// fragment shader that change color
 	// and moves a texture to get a moving effect
 	Shaders.fluxFragment = `

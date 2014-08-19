@@ -2,7 +2,9 @@
 	'use strict';
 	if (!Detector.webgl) Detector.addGetWebGLMessage();
 
-	var container, stats, camera, controls, scene, renderer, earth, width, height;
+	var home = {latitude:47.21176, longitude:-1.57300};
+
+	var data, flux, fluxMaterial, material, container, stats, camera, controls, scene, renderer, earth, width, height;
 
 	var globeUniforms, fluxUniforms;
 
@@ -62,6 +64,7 @@
 		document.addEventListener('mousedown', onDocumentMouseDown, false);
 
 		// create a globe representing the earth
+		// load from pngs
 		var worldMap = THREE.ImageUtils.loadTexture('assets/img/world_4k_bw.png');
 		var bordersMap = THREE.ImageUtils.loadTexture('assets/img/borders_map.png');
 		var continentsMap = THREE.ImageUtils.loadTexture('assets/img/continents_map.png');
@@ -92,11 +95,13 @@
 		scene.add(earth);
 
 		var numberOfPoints = 50;
-		var flux = new Flux(earth, numberOfPoints);
+		flux = new Flux(earth, numberOfPoints);
 
 		// some basic materials
-		//var material = new THREE.LineBasicMaterial({color: 'red', linewidth: 1});
-		//var material = new THREE.LineDashedMaterial({color: 0xffaa00, dashSize: 3, gapSize: 1, linewidth: 2});
+		//material = new THREE.LineBasicMaterial({color: 'red', linewidth: 1});
+		//material = new THREE.LineDashedMaterial({color: 0xffaa00, dashSize: 3, gapSize: 1, linewidth: 2});
+		material = new THREE.MeshBasicMaterial();
+		material.side = THREE.DoubleSide;
 
 		// texture passed to the shader
 		var shaderTexture = THREE.ImageUtils.loadTexture('assets/img/texture.16.png');
@@ -111,32 +116,22 @@
 		};
 
 		// shader material
-		var material = new THREE.ShaderMaterial({
+		fluxMaterial = new THREE.ShaderMaterial({
 			uniforms: fluxUniforms,
 			vertexShader: Shaders.noopVertex,
 			fragmentShader: Shaders.fluxFragment,
 			blending: THREE.AdditiveBlending,
 			depthTest: true,
 			depthWrite: false,
-			transparent: true,
-			linewidth: 1
+			transparent: true
 		});
 
 		// start constructing the lines
-		var home = {latitude:47.21176, longitude:-1.57300};
 		var xhr = new XMLHttpRequest();
 		xhr.open('GET', 'assets/data/capitals.json', true);
 		xhr.onreadystatechange = function() {
 			if (xhr.readyState === 4 && xhr.status === 200) {
-				var data = JSON.parse(xhr.responseText);
-				var current;
-				for (var i = 0; i < data.length; i++) {
-					current = data[i];
-					//fluxUniforms.displacement.value = i/data.length;
-					var doubleCubicFlux = flux.doubleCubicFlux(home.latitude, home.longitude, current.latitude, current.longitude);
-					var currentFlux = new THREE.Line(doubleCubicFlux, material);//, THREE.LinePieces);
-					scene.add(currentFlux);
-				}
+				data = JSON.parse(xhr.responseText);
 			}
 		};
 		xhr.send(null);
@@ -182,6 +177,13 @@
 					if (country) {
 						cameraTo(position);
 						console.log(country);
+						// remove previous flux
+						scene.remove(currentFlux);
+						// create new flux
+						var currentFlux = flux.ThreeDFlux(home.latitude, home.longitude, country.latitude, country.longitude);
+						//currentFlux = new THREE.Line(currentFlux, fluxMaterial);//, THREE.LinePieces);
+						currentFlux = new THREE.Mesh(currentFlux, mat);
+						scene.add(currentFlux);
 					}
 				});
 			});

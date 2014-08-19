@@ -59,7 +59,7 @@
 			// get the pixel data and callback
 			var pixelData = canvas.getContext('2d').getImageData(x, y, 1, 1).data;
 			callback(pixelData[0]);
-		}
+		};
 	};
 
 	/**
@@ -70,11 +70,13 @@
 	 */
 	GeoUtils.getCountryCodeFromIndex = function(index, callback) {
 		var xhr = new XMLHttpRequest();
-		xhr.open('GET', 'assets/data/indexed_countries.json', true);
+		xhr.open('GET', 'assets/data/newInflows.json', true);
 		xhr.onreadystatechange = function() {
 			if (xhr.readyState === 4 && xhr.status === 200) {
 				var data = JSON.parse(xhr.responseText);
-				callback(data[index-1]);
+				data.forEach(function(country) {
+					if (country.index === index) callback(country);
+				});
 			}
 		};
 		index > 0 ? xhr.send(null) : callback(null);
